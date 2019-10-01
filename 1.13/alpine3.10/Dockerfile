@@ -8,7 +8,7 @@ RUN apk add --no-cache \
 # - docker run --rm debian:stretch grep '^hosts:' /etc/nsswitch.conf
 RUN [ ! -e /etc/nsswitch.conf ] && echo 'hosts: files dns' > /etc/nsswitch.conf
 
-ENV GOLANG_VERSION 1.13.1
+ENV GIT_COMMIT 7b294cdd8df0a9523010f6ffc80c59e64578f34b
 
 RUN set -eux; \
 	apk add --no-cache --virtual .build-deps \
@@ -17,6 +17,7 @@ RUN set -eux; \
 		musl-dev \
 		openssl \
 		go \
+		git \
 	; \
 	export \
 # set GOROOT_BOOTSTRAP such that we can actually build Go
@@ -36,9 +37,11 @@ RUN set -eux; \
 		x86) export GO386='387' ;; \
 	esac; \
 	\
-	wget -O go.tgz "https://golang.org/dl/go$GOLANG_VERSION.src.tar.gz"; \
-	echo '81f154e69544b9fa92b1475ff5f11e64270260d46e7e36c34aafc8bc96209358 *go.tgz' | sha256sum -c -; \
+	wget -O go.tgz "https://github.com/golang/go/archive/$GIT_COMMIT.tar.gz"; \
+	echo '2a0a4cbe40a929cc0d765eba4d55bf27c69fbc7d771856c71d75c98b0212e29c *go.tgz' | sha256sum -c -; \
 	tar -C /usr/local -xzf go.tgz; \
+	mv /usr/local/go-$GIT_COMMIT /usr/local/go; \
+	echo $GIT_COMMIT > /usr/local/go/VERSION; \
 	rm go.tgz; \
 	\
 	cd /usr/local/go/src; \
